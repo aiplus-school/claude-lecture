@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026年 夏 新商品リリース説明会 | 驚安堂</title>
+<style>
+  :root {
+    --red: #e60012;
+    --yellow: #ffd900;
+    --black: #1a1a1a;
+    --gray: #f5f5f5;
+    --border: #e0e0e0;
+    --text: #2a2a2a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    background: #fafafa;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+
+  header {
+    background: linear-gradient(135deg, var(--red) 0%, #b3000e 100%);
+    color: #fff;
+    padding: 48px 24px;
+    text-align: center;
+    border-bottom: 8px solid var(--yellow);
+  }
+  header .project-tag {
+    display: inline-block;
+    background: var(--yellow);
+    color: var(--black);
+    padding: 4px 16px;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+  }
+  header .meta {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    font-size: 15px;
+  }
+  header .meta span::before { content: "■ "; color: var(--yellow); }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--red);
+    margin: 48px 0 20px;
+    padding: 12px 20px;
+    background: #fff;
+    border-left: 8px solid var(--red);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    text-align: center;
+    line-height: 36px;
+    margin-right: 12px;
+    border-radius: 50%;
+    font-size: 18px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--black);
+    margin: 20px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px dotted var(--red);
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+  }
+  .card ul { padding-left: 22px; }
+  .card li { margin-bottom: 6px; }
+
+  .callout {
+    background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+    border: 3px solid var(--red);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .callout .project-name {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+  .callout .project-name::before, .callout .project-name::after { content: "★"; color: var(--yellow); margin: 0 8px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin: 12px 0 20px;
+    font-size: 14px;
+  }
+  thead th {
+    background: var(--black);
+    color: var(--yellow);
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 700;
+  }
+  tbody td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:nth-child(even) { background: var(--gray); }
+  tbody tr:hover { background: #fff9c4; }
+  .price { color: var(--red); font-weight: 900; font-family: "Arial Black", sans-serif; }
+  .item-id {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .highlight-box {
+    background: var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .highlight-box h3 { border-bottom: 2px solid var(--black); color: var(--black); }
+  .highlight-box ul { padding-left: 22px; }
+  .highlight-box strong { color: var(--red); }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .kpi-card {
+    background: #fff;
+    border-top: 6px solid var(--red);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 4px;
+  }
+  .kpi-label { font-size: 13px; color: #666; margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 900; color: var(--red); }
+  .kpi-change { font-size: 13px; color: #0a8a0a; margin-top: 4px; font-weight: 700; }
+
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+    margin: 20px 0;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--red);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -28px;
+    top: 18px;
+    width: 16px;
+    height: 16px;
+    background: var(--yellow);
+    border: 3px solid var(--red);
+    border-radius: 50%;
+  }
+  .timeline-date {
+    display: inline-block;
+    background: var(--black);
+    color: var(--yellow);
+    padding: 2px 10px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-right: 12px;
+    border-radius: 2px;
+  }
+
+  .action-list { list-style: none; padding: 0; }
+  .action-list li {
+    background: #fff;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    border-left: 5px solid var(--red);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border-radius: 0 4px 4px 0;
+  }
+  .action-list .dept {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    padding: 3px 12px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-right: 12px;
+    border-radius: 2px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 32px;
+    background: var(--black);
+    color: #fff;
+    margin-top: 60px;
+  }
+  footer .closing { font-size: 14px; line-height: 2; }
+  footer .closing strong { color: var(--yellow); }
+
+  .divider { text-align: center; color: var(--yellow); font-size: 20px; margin: 32px 0; letter-spacing: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="project-tag">MAJI PRICE NEO PROJECT</div>
+  <h1>2026年 夏 新商品リリース説明会</h1>
+  <div class="meta">
+    <span>日時：2026年5月20日（水）14:00〜16:00</span>
+    <span>場所：驚安堂本社 9F 大会議室 ／ Zoom併用</span>
+    <span>主催：マーケティング本部 PB商品企画部</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <h2><span class="num">1</span>開会の挨拶</h2>
+  <div class="card">
+    <ul>
+      <li>マーケ本部長 <strong>矢島</strong>より</li>
+      <li>「マジ価格 NEO」プロジェクトの位置づけと夏商戦の重要性</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">2</span>市場背景と今夏の方針</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>マクロ環境</h3>
+      <ul>
+        <li>訪日客数：2025年通期で<strong>過去最高の3,800万人突破見込み</strong></li>
+        <li>円安基調継続、客単価アップのチャンス</li>
+        <li>猛暑予報：気象庁発表で「平年比+1.2℃」、夏物特需を想定</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>当社の課題</h3>
+      <ul>
+        <li>夏物カテゴリの伸びが鈍化（前年比+2%）</li>
+        <li>インバウンド客の購買単価は上がっているがリピートが弱い</li>
+        <li>SNS発信は店舗任せでバラつきが大きい</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">
+    <div class="project-name">今夏の戦略方針：マジ価格 NEO</div>
+    <p>PB新ライン<strong>10商品を一斉投入</strong>。夏3ヶ月で<strong>売上18億円</strong>、インバウンド比率<strong>22%（前年18%）</strong>を狙う。</p>
+  </div>
+
+  <h2><span class="num">3</span>新商品ラインアップ（10品目）</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>商品名</th><th>カテゴリ</th><th>想定売価</th><th>原価率</th><th>主要ターゲット</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="item-id">1</span></td><td>ジェットコーラ 500ml</td><td>飲料</td><td class="price">88円</td><td>62%</td><td>学生・現場作業者</td></tr>
+      <tr><td><span class="item-id">2</span></td><td>シャイニー10秒パック（5枚入）</td><td>美容</td><td class="price">398円</td><td>41%</td><td>20〜30代女性／訪日女性客</td></tr>
+      <tr><td><span class="item-id">3</span></td><td>光るぞ☆オシキン</td><td>雑貨（推し活）</td><td class="price">580円</td><td>38%</td><td>Z世代・推し活層</td></tr>
+      <tr><td><span class="item-id">4</span></td><td>カラカラT（吸水速乾Tシャツ）</td><td>アパレル</td><td class="price">980円</td><td>45%</td><td>男性全般・現場作業者</td></tr>
+      <tr><td><span class="item-id">5</span></td><td>氷点下フウ太郎（ハンディファン）</td><td>家電</td><td class="price">1,480円</td><td>52%</td><td>通勤層・訪日客</td></tr>
+      <tr><td><span class="item-id">6</span></td><td>噛みごたえ侍グミ</td><td>食品</td><td class="price">158円</td><td>48%</td><td>中高生・男性</td></tr>
+      <tr><td><span class="item-id">7</span></td><td>ヒエヒエ砲（USB扇風機）</td><td>家電</td><td class="price">980円</td><td>50%</td><td>デスクワーカー</td></tr>
+      <tr><td><span class="item-id">8</span></td><td>ツヤツヤ滝行シャンプー 400ml</td><td>日用品</td><td class="price">698円</td><td>44%</td><td>20〜40代女性</td></tr>
+      <tr><td><span class="item-id">9</span></td><td>ばかうま柿の葉煎餅 激辛味</td><td>食品</td><td class="price">248円</td><td>46%</td><td>30代以上男性／訪日客</td></tr>
+      <tr><td><span class="item-id">10</span></td><td>マイナス3℃ZZZ アイス枕</td><td>日用品</td><td class="price">1,280円</td><td>49%</td><td>全世代</td></tr>
+    </tbody>
+  </table>
+  <div class="highlight-box">
+    <h3>☆ 注目ポイント ☆</h3>
+    <ul>
+      <li><strong>「光るぞ☆オシキン」</strong>は二次創作OKポリシーを採用、SNS拡散の起爆剤に</li>
+      <li><strong>「ジェットコーラ」</strong>は業界最安値帯、全店レジ横の冷蔵什器に配置</li>
+      <li><strong>アイス枕「マイナス3℃ZZZ」</strong>は猛暑特需狙いの目玉商品</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">4</span>販売チャネル戦略</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>国内</h3>
+      <ul>
+        <li>全国驚安堂 <strong>570店舗</strong>（うち免税対応300店舗）で一斉展開</li>
+        <li>公式EC「驚安オンライン」：5月25日先行予約開始</li>
+        <li>法人ルート：オフィス向け「夏のまとめ買いセット」（カラカラT＋ヒエヒエ砲）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>海外</h3>
+      <ul>
+        <li>アジア16店舗（台湾7／タイ4／香港3／シンガポール2）で同時展開</li>
+        <li>北米テスト：ロサンゼルス・ホノルル2店舗で「ジェットコーラ」「噛みごたえ侍」先行投入</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h3>インバウンド施策</h3>
+    <ul>
+      <li>免税ポップを<strong>4言語化</strong>（英・中・韓・タイ）</li>
+      <li>中国「小紅書」インフルエンサー10名起用、5月下旬に投稿開始</li>
+      <li>台湾IGリール広告、6月配信</li>
+      <li>訪日客向け「マジ価格NEOガイド」を成田・関空・那覇で配布</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">5</span>プロモーション・SNS施策</h2>
+  <table>
+    <thead>
+      <tr><th>施策</th><th>内容</th><th>担当</th><th>開始</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TikTok公式チャレンジ</td><td>#マジ価格夏チャレンジ</td><td>広報部</td><td class="price">6/20</td></tr>
+      <tr><td>インフルエンサー10名先行</td><td>国内Z世代＋訪日層に強い10名</td><td>マーケ部</td><td class="price">6/15</td></tr>
+      <tr><td>推し活コラボ</td><td>「光るぞ☆オシキン」二次創作OK公式宣言</td><td>マーケ部</td><td class="price">6/20</td></tr>
+      <tr><td>1万円ガチ買いガチャ</td><td>1万円購入で景品ガチャ1回</td><td>店舗運営部</td><td class="price">7/1</td></tr>
+      <tr><td>店頭POP多言語化</td><td>主要免税対応店300店</td><td>店舗運営部</td><td class="price">6/10</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="num">6</span>KPIと目標</h2>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">夏3ヶ月売上</div>
+      <div class="kpi-value">18.0<span style="font-size:16px;">億円</span></div>
+      <div class="kpi-change">前年比 +12%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">客単価</div>
+      <div class="kpi-value">1,400<span style="font-size:16px;">円</span></div>
+      <div class="kpi-change">前年比 +8%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">インバウンド比率</div>
+      <div class="kpi-value">22<span style="font-size:16px;">%</span></div>
+      <div class="kpi-change">前年比 +4pt</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">SNS UGC投稿数</div>
+      <div class="kpi-value">5,000<span style="font-size:16px;">件</span></div>
+      <div class="kpi-change">新規</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">マジ価格NEOリピート率</div>
+      <div class="kpi-value">35<span style="font-size:16px;">%</span></div>
+      <div class="kpi-change">新規</div>
+    </div>
+  </div>
+
+  <h2><span class="num">7</span>スケジュール</h2>
+  <div class="timeline">
+    <div class="timeline-item"><span class="timeline-date">5/25</span>EC先行予約開始</div>
+    <div class="timeline-item"><span class="timeline-date">6/10</span>店頭POP配布完了</div>
+    <div class="timeline-item"><span class="timeline-date">6/15</span>店舗陳列開始／インフルエンサー先行投稿</div>
+    <div class="timeline-item"><span class="timeline-date">6/20</span>SNS解禁・TikTokチャレンジ開始</div>
+    <div class="timeline-item"><span class="timeline-date">7/1</span>全国一斉キャンペーン開始</div>
+    <div class="timeline-item"><span class="timeline-date">8/15</span>中間レビュー会議</div>
+    <div class="timeline-item"><span class="timeline-date">8/31</span>夏キャンペーン終了</div>
+    <div class="timeline-item"><span class="timeline-date">9/10</span>振り返り会議</div>
+  </div>
+
+  <h2><span class="num">8</span>各部へのお願い（アクションアイテム）</h2>
+  <ul class="action-list">
+    <li><span class="dept">営業部</span>店頭POP受領後、<strong>6/10までに</strong>陳列完了</li>
+    <li><span class="dept">店舗運営部</span>免税対応店スタッフへの新商品研修を<strong>6/5までに</strong>実施</li>
+    <li><span class="dept">物流部</span>6/15陳列開始に向けた配送スケジュール確定（<strong>5/27まで</strong>）</li>
+    <li><span class="dept">海外事業部</span>アジア16店舗の現地スタッフ向けマニュアル翻訳（<strong>6/1まで</strong>）</li>
+    <li><span class="dept">広報部</span>プレスリリース<strong>6/15 10:00</strong>配信</li>
+    <li><span class="dept">全部署</span>8/15中間レビュー会議用の中間データ提出（<strong>8/12まで</strong>）</li>
+  </ul>
+
+  <h2><span class="num">9</span>質疑応答</h2>
+  <div class="card">
+    <p>ご質問・ご意見はこのセッションでお受けします。会議終了後の追加質問は <strong>marketing@odb.co.jp</strong> までお寄せください。</p>
+  </div>
+
+</div>
+
+<footer>
+  <h2 style="background:transparent; color:var(--yellow); border:none; box-shadow:none; margin:0 0 16px;"><span class="num" style="background:var(--yellow); color:var(--black);">10</span>閉会</h2>
+  <div class="closing">
+    マーケ本部長 <strong>矢島</strong>より総括<br>
+    次回会議：<strong>6月17日（水）14:00 進捗共有会</strong>
+  </div>
+  <div class="divider">★ ★ ★</div>
+  <div style="font-size:12px; color:#999;">© 2026 驚安堂 マーケティング本部 PB商品企画部</div>
+</footer>
+
+</body>
+</html>
