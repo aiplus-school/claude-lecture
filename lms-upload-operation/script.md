@@ -7,7 +7,7 @@
 
 ## 撮影前のセットアップ
 
-- スライド: Chromeで `https://takuyatsuchiya.github.io/claude-lecture/lms-upload-operation/` を開いてP1表示
+- スライド: Chromeで `https://aiplus-school.github.io/claude-lecture/lms-upload-operation/` を開いてP1表示
 - Claude Code: 起動。**事前に `/plugin uninstall wisdombase@wisdombase-lms-skill` でアンインストールしておく**（収録中に初インストールを見せるため）
 - WisdomBase編集画面: 別タブで `https://ai-plus.share-wis.com/ja/courses/45236/edit` を開いておく（DevToolsはまだ開かない）
 - 通知OFF・メニューバー整理
