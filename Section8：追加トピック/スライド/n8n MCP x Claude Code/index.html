@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>n8n MCP　自然言語でワークフローを自動生成しよう</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  --font-family: "游ゴシック", "Yu Gothic", YuGothic, "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --font-mono: "SF Mono", Menlo, Consolas, monospace;
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-sub: #555555;
+  --color-mute: #888888;
+  --color-accent: #c15f3c;
+  --color-accent-soft: #f4e9e3;
+  --color-line: #e5e5e5;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+}
+
+.deck {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 120px;
+  text-align: center;
+}
+
+.slide.active {
+  display: flex;
+}
+
+.slide h1 {
+  font-size: 64pt;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+.slide h2 {
+  font-size: 44pt;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.slide h3 {
+  font-size: 32pt;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-sub);
+}
+
+.slide p {
+  font-size: 28pt;
+  line-height: 1.8;
+  max-width: 1100px;
+}
+
+.slide p + p {
+  margin-top: 28px;
+}
+
+.slide .subtitle {
+  font-size: 24pt;
+  color: var(--color-sub);
+  margin-top: 24px;
+  font-weight: 500;
+}
+
+.slide .eyebrow {
+  font-size: 20pt;
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+
+.slide .big-number {
+  font-size: 140pt;
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.slide ul.plain {
+  list-style: none;
+  font-size: 28pt;
+  line-height: 2;
+  text-align: left;
+  max-width: 900px;
+}
+
+.slide ul.plain li {
+  padding-left: 44px;
+  position: relative;
+}
+
+.slide ul.plain li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+/* 見出し＋補足の2段構成の項目は、点を1行目の中央に合わせる */
+.slide ul.plain li.stacked::before {
+  top: 0.95em;
+}
+
+/* 枠の中で使う小さめの箇条書き */
+.slide ul.box-list {
+  list-style: none;
+  text-align: left;
+  font-size: 20pt;
+  line-height: 1.6;
+  /* 行は左揃えのまま、リスト全体は内容幅に縮めて枠の中央に置く */
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.slide ul.box-list li {
+  position: relative;
+  padding-left: 30px;
+}
+
+.slide ul.box-list li + li {
+  margin-top: 20px;
+}
+
+.slide ul.box-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.8em;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+.slide ul.box-list.muted li::before {
+  background: var(--color-mute);
+}
+
+.slide .sections {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px 36px;
+  font-size: 26pt;
+  text-align: left;
+  max-width: 1000px;
+  line-height: 1.5;
+}
+
+.slide .sections .tag {
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.slide .tagline {
+  position: absolute;
+  bottom: 60px;
+  font-size: 18pt;
+  color: var(--color-mute);
+}
+
+.slide.cover {
+  background: var(--color-bg);
+}
+
+.slide.cover .brand {
+  font-size: 18pt;
+  color: var(--color-accent);
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+
+.slide.cover h1 {
+  font-size: 80pt;
+  margin-bottom: 24px;
+}
+
+.slide.cover .subtitle {
+  font-size: 28pt;
+}
+
+.slide .rule {
+  width: 80px;
+  height: 4px;
+  background: var(--color-accent);
+  margin: 32px 0;
+}
+
+.page-indicator {
+  position: fixed;
+  bottom: 24px;
+  right: 32px;
+  font-size: 18pt;
+  color: var(--color-mute);
+  font-family: var(--font-mono);
+  z-index: 100;
+}
+
+.nav-hint {
+  position: fixed;
+  bottom: 24px;
+  left: 32px;
+  font-size: 18pt;
+  color: var(--color-mute);
+  z-index: 100;
+}
+
+@media (max-width: 1279px), (max-height: 799px) {
+  .page-indicator {
+    font-size: clamp(11px, 1.5vmin, 18pt);
+    bottom: clamp(10px, 2vmin, 24px);
+    right: clamp(12px, 2vmin, 32px);
+  }
+  .nav-hint {
+    font-size: clamp(11px, 1.5vmin, 18pt);
+    bottom: clamp(10px, 2vmin, 24px);
+    left: clamp(12px, 2vmin, 32px);
+  }
+}
+
+@media print {
+  .page-indicator, .nav-hint { display: none; }
+  .slide { display: flex !important; page-break-after: always; position: relative; height: 100vh; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- 1: Cover -->
+  <section class="slide cover active">
+    <h1 style="font-size:64pt;">n8n MCP<br>自然言語でワークフローを<br>自動生成しよう</h1>
+  </section>
+
+  <!-- 2: WHAT IS n8n MCP -->
+  <section class="slide">
+    <div class="eyebrow">WHAT IS n8n MCP</div>
+    <h2>Claude Codeをあなたのn8nにMCPでつなぐ</h2>
+    <div class="rule"></div>
+    <div style="display:flex; align-items:stretch; justify-content:center; gap:28px; margin-top:24px; width:100%; max-width:1200px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">Chat形式のAIに聞く</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">"それっぽい"設計図が<br>返ってくる</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">存在しないブロック名<br>間違った設定項目</div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:center; min-width:80px;">
+        <div style="font-size:52pt; color:var(--color-accent); font-weight:700;">→</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">MCPでつなぐ</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">あなたのn8nの中で<br>実際に組み立てる</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">作る → 検証する<br>→ テスト実行まで</div>
+      </div>
+    </div>
+    <div style="margin-top:26px; font-size:18pt; color:var(--color-mute); line-height:1.6;">MCP＝AIが外部のツールとつながるための共通規格</div>
+  </section>
+
+  <!-- 3: WHY CLAUDE CODE -->
+  <section class="slide">
+    <div class="eyebrow">WHY CLAUDE CODE</div>
+    <h2>自分で作るときの&ldquo;詰まり&rdquo;が消える</h2>
+    <div class="rule"></div>
+    <div style="display:flex; align-items:stretch; justify-content:center; gap:24px; margin-top:16px; width:100%; max-width:1240px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:26px;">よくある2つの詰まり</div>
+        <ul class="box-list muted">
+          <li>エラーが出ても<br>原因が分からない</li>
+          <li>AIが実在しない<br>ブロックを勧めてくる</li>
+        </ul>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:center; min-width:80px;">
+        <div style="font-size:52pt; color:var(--color-accent); font-weight:700;">→</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:26px;">つなぐと解消する理由</div>
+        <ul class="box-list">
+          <li>本物のn8nを<br>見ながら話す</li>
+          <li>相談した内容が<br>そのまま反映される</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:26px; font-size:18pt; color:var(--color-mute); line-height:1.6;">画面を組み直す・エラーを貼って聞く、あの往復が要らなくなります</div>
+  </section>
+
+  <!-- 4: NOTE — チーム／エンタープライズプラン -->
+  <section class="slide">
+    <div class="eyebrow">NOTE</div>
+    <h2 style="font-size:40pt;">チーム・エンタープライズプランでお使いの方へ</h2>
+    <div class="rule"></div>
+    <div style="border:2px solid var(--color-accent); border-radius:12px; padding:44px 48px; background:#fafafa; max-width:1100px;">
+      <div style="font-size:26pt; line-height:1.8; color:var(--color-text); font-weight:500;">連携のリクエストが<span style="color:var(--color-accent);">組織の管理者</span>に送られ、<br><span style="color:var(--color-accent);">承認されてから</span>使えるようになります</div>
+    </div>
+    <div style="margin-top:32px; font-size:20pt; color:var(--color-sub); line-height:1.6;">個人プランの方はそのまま進めて大丈夫です</div>
+  </section>
+
+  <!-- 5: WHY n8n — Claude CodeやCodexで自動化する代わりにn8nを使う3つの理由 -->
+  <section class="slide">
+    <div class="eyebrow">WHY n8n</div>
+    <h2 style="font-size:40pt;">Claude CodeやCodexで自動化する代わりに<br>n8nを使う3つの理由</h2>
+    <div class="rule"></div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; width:100%; max-width:1400px; margin:16px auto 0;">
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:28px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">01</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">業務の流れが<br>図で見える</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.6;">エンジニアでない<br>同僚やお客さんにも<br>画面を見せて説明できる</div>
+      </div>
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:28px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">02</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">AIに任せすぎないので<br>結果がブレにくい</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.6;">判断が要る所だけAIに任せ<br>あとは決めた通りに動く<br>図の上で線引きできる</div>
+      </div>
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:28px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">03</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">複数のAIやサービスの<br>役割分担が見える</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.6;">どの工程で何を使うか<br>コストと性能を<br>整理しながら設計できる</div>
+      </div>
+    </div>
+    <div style="margin-top:26px; font-size:18pt; color:var(--color-mute); line-height:1.6;">その n8n を Claude Code が代わりに組み立ててくれる</div>
+  </section>
+
+  <!-- 6: CAUTION — 自分で試すときの注意点 -->
+  <section class="slide">
+    <div class="eyebrow">CAUTION</div>
+    <h2>自分で試すときの注意点</h2>
+    <div class="rule"></div>
+    <ul class="plain" style="text-align:left; max-width:1000px; font-size:26pt; line-height:1.9; margin-top:16px;">
+      <li class="stacked" style="text-align:left;">最初は必ず<strong style="color:var(--color-accent);">オフ</strong>の状態で作る<br><span style="font-size:19pt; color:var(--color-sub);">ワークフロー画面右上の Active スイッチを切っておく</span></li>
+      <li class="stacked" style="text-align:left; margin-top:22px;"><strong style="color:var(--color-accent);">つなぎ先</strong>だけは自分で設定する<br><span style="font-size:19pt; color:var(--color-sub);">Google・Slackへのログインと、書き込み先・通知先の選択</span></li>
+      <li class="stacked" style="text-align:left; margin-top:22px;">一発で完璧を<strong style="color:var(--color-accent);">狙わない</strong><br><span style="font-size:19pt; color:var(--color-sub);">土台をAIに作らせて、気になるところは会話で直していく</span></li>
+    </ul>
+  </section>
+
+</div>
+
+<div class="page-indicator"><span id="cur">1</span> / <span id="total">1</span></div>
+<div class="nav-hint">← → / Space</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const cur = document.getElementById('cur');
+  const total = document.getElementById('total');
+  total.textContent = slides.length;
+  let i = 0;
+  function show(n) {
+    i = Math.max(0, Math.min(n, slides.length - 1));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    cur.textContent = i + 1;
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) {}
+  }
+  const initial = parseInt(location.hash.replace('#', ''), 10);
+  show(Number.isFinite(initial) && initial > 0 ? initial - 1 : 0);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') { show(0); }
+    else if (e.key === 'End') { show(slides.length - 1); }
+  });
+  document.addEventListener('click', () => show(i + 1));
+</script>
+
+</body>
+</html>
