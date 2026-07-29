@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remotion Agent Skills　日本語の指示だけで動画を作り、同じ型を量産する</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  --font-family: "游ゴシック", "Yu Gothic", YuGothic, "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --font-mono: "SF Mono", Menlo, Consolas, monospace;
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-sub: #555555;
+  --color-mute: #888888;
+  --color-accent: #c15f3c;
+  --color-accent-soft: #f4e9e3;
+  --color-line: #e5e5e5;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+}
+
+.deck {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 120px;
+  text-align: center;
+}
+
+.slide.active {
+  display: flex;
+}
+
+.slide h1 {
+  font-size: 64pt;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+.slide h2 {
+  font-size: 44pt;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.slide h3 {
+  font-size: 32pt;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-sub);
+}
+
+.slide p {
+  font-size: 28pt;
+  line-height: 1.8;
+  max-width: 1100px;
+}
+
+.slide p + p {
+  margin-top: 28px;
+}
+
+.slide .subtitle {
+  font-size: 24pt;
+  color: var(--color-sub);
+  margin-top: 24px;
+  font-weight: 500;
+}
+
+.slide .eyebrow {
+  font-size: 20pt;
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+
+.slide .big-number {
+  font-size: 140pt;
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.slide ul.plain {
+  list-style: none;
+  font-size: 28pt;
+  line-height: 2;
+  text-align: left;
+  max-width: 900px;
+}
+
+.slide ul.plain li {
+  padding-left: 44px;
+  position: relative;
+}
+
+.slide ul.plain li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+/* 見出し＋補足の2段構成の項目は、点を1行目の中央に合わせる */
+.slide ul.plain li.stacked::before {
+  top: 0.95em;
+}
+
+/* 枠の中で使う小さめの箇条書き */
+.slide ul.box-list {
+  list-style: none;
+  text-align: left;
+  font-size: 20pt;
+  line-height: 1.6;
+  /* 行は左揃えのまま、リスト全体は内容幅に縮めて枠の中央に置く */
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.slide ul.box-list li {
+  position: relative;
+  padding-left: 30px;
+}
+
+.slide ul.box-list li + li {
+  margin-top: 20px;
+}
+
+.slide ul.box-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.8em;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+.slide ul.box-list.muted li::before {
+  background: var(--color-mute);
+}
+
+.slide .sections {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px 36px;
+  font-size: 26pt;
+  text-align: left;
+  max-width: 1000px;
+  line-height: 1.5;
+}
+
+.slide .sections .tag {
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.slide .tagline {
+  position: absolute;
+  bottom: 60px;
+  font-size: 18pt;
+  color: var(--color-mute);
+}
+
+.slide.cover {
+  background: var(--color-bg);
+}
+
+.slide.cover .brand {
+  font-size: 18pt;
+  color: var(--color-accent);
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+
+.slide.cover h1 {
+  font-size: 80pt;
+  margin-bottom: 24px;
+}
+
+.slide.cover .subtitle {
+  font-size: 28pt;
+}
+
+.slide .rule {
+  width: 80px;
+  height: 4px;
+  background: var(--color-accent);
+  margin: 32px 0;
+}
+
+.page-indicator {
+  position: fixed;
+  bottom: 24px;
+  right: 32px;
+  font-size: 18pt;
+  color: var(--color-mute);
+  font-family: var(--font-mono);
+  z-index: 100;
+}
+
+.nav-hint {
+  position: fixed;
+  bottom: 24px;
+  left: 32px;
+  font-size: 18pt;
+  color: var(--color-mute);
+  z-index: 100;
+}
+
+@media (max-width: 1279px), (max-height: 799px) {
+  .page-indicator {
+    font-size: clamp(11px, 1.5vmin, 18pt);
+    bottom: clamp(10px, 2vmin, 24px);
+    right: clamp(12px, 2vmin, 32px);
+  }
+  .nav-hint {
+    font-size: clamp(11px, 1.5vmin, 18pt);
+    bottom: clamp(10px, 2vmin, 24px);
+    left: clamp(12px, 2vmin, 32px);
+  }
+}
+
+@media print {
+  .page-indicator, .nav-hint { display: none; }
+  .slide { display: flex !important; page-break-after: always; position: relative; height: 100vh; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- 1: Cover -->
+  <section class="slide cover active">
+    <h1 style="font-size:64pt;">Remotion Agent Skills<br>日本語の指示だけで動画を作り、<br>同じ型を量産する</h1>
+  </section>
+
+  <!-- 2: WHAT IS REMOTION -->
+  <section class="slide">
+    <div class="eyebrow">WHAT IS REMOTION</div>
+    <h2>手で編集するのではなく、コードで組み立てる</h2>
+    <div class="rule"></div>
+    <div style="display:flex; align-items:stretch; justify-content:center; gap:28px; margin-top:24px; width:100%; max-width:1200px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">ふつうの動画編集ソフト</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">タイムラインに素材を<br>手で並べていく</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">同じ作業をもう一度やるには<br>また手で並べ直す</div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:center; min-width:80px;">
+        <div style="font-size:52pt; color:var(--color-accent); font-weight:700;">→</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">Remotion</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">「今、何コマ目か」から<br>見た目をコードで計算する</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">コードだから<br>同じ作業を何回でも繰り返せる</div>
+      </div>
+    </div>
+    <div style="margin-top:26px; font-size:18pt; color:var(--color-mute); line-height:1.6;">テロップを乗せる・素材を重ねるといった編集は、Remotion でもできます</div>
+  </section>
+
+  <!-- 3: WHY REMOTION -->
+  <section class="slide">
+    <div class="eyebrow">WHY REMOTION</div>
+    <h2 style="font-size:40pt;">AI動画ツールが他にもある中で<br>Remotion を選ぶ理由</h2>
+    <div class="rule"></div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; width:100%; max-width:1400px; margin:16px auto 0;">
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:28px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">01</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">同じ型の動画を<br>データ差し替えで作れる</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.6;">型は同じ、中身は人それぞれ<br>Spotifyの「Wrapped」も<br>この作り方</div>
+      </div>
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:28px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">02</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">試す段階では<br>お金がかからない</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.6;">個人・3人以下の会社は無料<br>自分のパソコンで動かすので<br>生成ごとの課金がない</div>
+      </div>
+      <div style="border:2px solid var(--color-accent); border-radius:12px; padding:28px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">03</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">これまでの壁と<br>その越え方</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.6;">コードで書く道具なので<br>React が書ける人の道具だった<br><span style="color:var(--color-accent); font-weight:700;">→ そこを Claude Code が埋める</span></div>
+      </div>
+    </div>
+    <div style="margin-top:26px; font-size:18pt; color:var(--color-mute); line-height:1.6;">凝った動画を1本だけ作るなら、編集ソフトやAI動画ツールのほうが速いこともあります</div>
+  </section>
+
+  <!-- 4: RELOAD SKILLS -->
+  <section class="slide">
+    <div class="eyebrow">RELOAD SKILLS</div>
+    <h2 style="font-size:36pt; flex-shrink:0;">あとから足したスキルは<br><code style="font-family:var(--font-mono); font-size:32pt; color:var(--color-accent);">/reload-skills</code> で読み直させる</h2>
+    <div class="rule" style="margin:18px 0; flex-shrink:0;"></div>
+    <div style="flex-shrink:0; width:100%; max-width:940px; border:2px solid var(--color-line); border-radius:12px; overflow:hidden; background:#fafafa;">
+      <img src="画像/01_reload-skills.png" alt="Claude Code で /reload-skills を実行し、Reloaded skills: 72 skills available (11 added) と表示された画面" style="display:block; width:100%; height:auto;">
+    </div>
+    <div style="flex-shrink:0; display:flex; align-items:stretch; justify-content:center; gap:22px; margin-top:22px; width:100%; max-width:940px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:20px 18px; background:#fafafa; text-align:center;">
+        <div style="font-size:16pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:12px;">なぜ必要か</div>
+        <div style="font-size:18pt; line-height:1.6; color:var(--color-text);">起動したときのスキルしか<br>読み込んでいないので、<br><strong>あとから足したものには気づかない</strong></div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:20px 18px; background:#fafafa; text-align:center;">
+        <div style="font-size:16pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:12px;">やらないとどうなるか</div>
+        <div style="font-size:18pt; line-height:1.6; color:var(--color-text);">このあと使う<br><code style="font-family:var(--font-mono);">/</code> で始まるコマンドが<br><strong>出てこない</strong></div>
+      </div>
+    </div>
+    <div style="flex-shrink:0; margin-top:18px; font-size:18pt; color:var(--color-mute); line-height:1.6;">「Reloaded skills」と数が出れば読み直しは成功です</div>
+  </section>
+
+  <!-- 5: SCALE — 量産 -->
+  <section class="slide">
+    <div class="eyebrow">SCALE</div>
+    <h2 style="font-size:40pt;">データを差し替えれば、<br>同じ型の動画を何本でも</h2>
+    <div class="rule"></div>
+    <div style="display:flex; align-items:stretch; justify-content:center; gap:28px; margin-top:16px; width:100%; max-width:1200px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">手作業でやると</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">1本ずつ開いて<br>名前を打ち替えて作り直す</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">10人なら10回<br>100人なら100回</div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:center; min-width:80px;">
+        <div style="font-size:52pt; color:var(--color-accent); font-weight:700;">→</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">コードでやると</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">一覧データを渡して<br>まとめて書き出す</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">既存の動画へのテロップ入れも<br>一覧からの紹介動画も<br>仕組みは同じ</div>
+      </div>
+    </div>
+    <div style="margin-top:26px; font-size:18pt; color:var(--color-mute); line-height:1.6;">GMOの技術ブログでは、インタビュー動画30本以上へのテロップ挿入を夜間に無人で完了したと報告されています</div>
+  </section>
+
+  <!-- 6: CLOSING -->
+  <section class="slide">
+    <div class="eyebrow">CLOSING</div>
+    <h2>手作業の繰り返しを、仕組みに置き換える</h2>
+    <div class="rule"></div>
+    <div style="border:2px solid var(--color-accent); border-radius:12px; padding:40px 48px; background:#fafafa; max-width:1150px;">
+      <div style="font-size:26pt; line-height:1.8; color:var(--color-text); font-weight:500;">今回追加で覚えて帰ってほしい使い方<br><span style="color:var(--color-accent);">Claude Code に頼めば、コードが書けなくても<br>Remotion で動画が作れる</span></div>
+    </div>
+    <div style="margin-top:30px; font-size:20pt; color:var(--color-sub); line-height:1.7;">1本作るのも、テロップ入れも、量産の指示も、やったことは日本語で頼んだだけ</div>
+    <div style="margin-top:18px; font-size:20pt; color:var(--color-sub); line-height:1.7;">テロップ入れ・メンバー紹介・商品紹介・ランキング・データの可視化——<br>同じ作業を繰り返している場面ほど、置き換えたときの効果が出ます</div>
+  </section>
+
+  <!-- 7: CAUTION -->
+  <section class="slide">
+    <div class="eyebrow">CAUTION</div>
+    <h2>自分で試すときの注意点</h2>
+    <div class="rule"></div>
+    <ul class="plain" style="text-align:left; max-width:1050px; font-size:26pt; line-height:1.9; margin-top:16px;">
+      <li class="stacked" style="text-align:left;">書き出しには<strong style="color:var(--color-accent);">時間がかかる</strong><br><span style="font-size:19pt; color:var(--color-sub);">まずは尺を短く、解像度も控えめに。元素材が高画質だと処理が重くなる</span></li>
+      <li class="stacked" style="text-align:left; margin-top:22px;">完全に無料<strong style="color:var(--color-accent);">ではない</strong><br><span style="font-size:19pt; color:var(--color-sub);">個人・3人以下の会社は無料。4人以上の営利企業で使うならライセンスが必要で、<br>Claude Code に書かせる人もその対象に含まれます</span></li>
+      <li class="stacked" style="text-align:left; margin-top:22px;">一発で思いどおりに<strong style="color:var(--color-accent);">ならないこともある</strong><br><span style="font-size:19pt; color:var(--color-sub);">確かめて直す、を繰り返す。エラーはそのまま貼って相談できます</span></li>
+    </ul>
+  </section>
+
+</div>
+
+<div class="page-indicator"><span id="cur">1</span> / <span id="total">1</span></div>
+<div class="nav-hint">← → / Space</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const cur = document.getElementById('cur');
+  const total = document.getElementById('total');
+  total.textContent = slides.length;
+  let i = 0;
+  function show(n) {
+    i = Math.max(0, Math.min(n, slides.length - 1));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    cur.textContent = i + 1;
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) {}
+  }
+  const initial = parseInt(location.hash.replace('#', ''), 10);
+  show(Number.isFinite(initial) && initial > 0 ? initial - 1 : 0);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') { show(0); }
+    else if (e.key === 'End') { show(slides.length - 1); }
+  });
+  document.addEventListener('click', () => show(i + 1));
+</script>
+
+</body>
+</html>
