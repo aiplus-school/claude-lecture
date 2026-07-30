@@ -346,7 +346,66 @@ html, body {
     <div style="flex-shrink:0; margin-top:18px; font-size:18pt; color:var(--color-mute); line-height:1.6;">「Reloaded skills」と数が出れば読み直しは成功です</div>
   </section>
 
-  <!-- 5: SCALE — 量産 -->
+  <!-- 5: SUBTITLE SOURCE — テロップの用意 -->
+  <section class="slide">
+    <div class="eyebrow">SUBTITLE SOURCE</div>
+    <h2 style="font-size:36pt; flex-shrink:0;">テロップの文面は、自分で書かなくていい</h2>
+    <div class="rule" style="margin:18px 0; flex-shrink:0;"></div>
+    <div style="flex-shrink:0; display:flex; align-items:stretch; justify-content:center; gap:24px; width:100%; max-width:1240px;">
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:26px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:17pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">やり方1</div>
+        <div style="font-size:21pt; line-height:1.6; color:var(--color-text); font-weight:700;">Claude Code に<br>考えてもらう</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">その動画を Claude Code に<br>作らせたのなら、<strong style="color:var(--color-text);">中身はすでに知っている</strong><br>→ 文面も表示する秒数も任せられる</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:26px 22px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:17pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">やり方2</div>
+        <div style="font-size:21pt; line-height:1.6; color:var(--color-text); font-weight:700;">文字起こしを使う<br><span style="font-size:17pt; font-weight:500; color:var(--color-sub);">（音声のある動画）</span></div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">文字起こしをテキストにすれば<br>一から書かずに済む<br>→ <strong style="color:var(--color-text);">変換ミスや区切りも直してもらえる</strong></div>
+      </div>
+    </div>
+    <div style="flex-shrink:0; margin-top:22px; width:100%; max-width:1240px; border:2px solid var(--color-line); border-radius:12px; padding:20px 26px; background:#fafafa;">
+      <div style="font-size:17pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:12px; text-align:center;">やり方2の注意</div>
+      <ul class="box-list muted" style="font-size:18pt;">
+        <li><strong style="color:var(--color-text);">AIは音声を聞けません。</strong>人名や数字は直せないので、最後は自分で目を通す</li>
+        <li><strong style="color:var(--color-text);">外部のサービスで文字起こしを取ると、音声の中身がそこに渡ります。</strong>社外に出せない内容が入っていないか先に確認する</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6: WHERE TO PUT — 素材の置き場所 -->
+  <section class="slide">
+    <div class="eyebrow">WHERE TO PUT</div>
+    <h2 style="font-size:36pt; flex-shrink:0;">素材は <code style="font-family:var(--font-mono); font-size:32pt; color:var(--color-accent);">public</code> の中に、動画1本ぶんずつ</h2>
+    <div class="rule" style="margin:18px 0; flex-shrink:0;"></div>
+    <div style="flex-shrink:0; display:flex; align-items:stretch; justify-content:center; gap:28px; width:100%; max-width:1240px;">
+      <div style="flex:0 0 58%; border:2px solid var(--color-accent); border-radius:12px; padding:26px 30px; background:#fafafa; text-align:left;">
+<pre style="font-family:var(--font-mono); font-size:15pt; line-height:1.75; color:var(--color-text); margin:0; white-space:pre;">C:\dev\telop-demo-work\
+├── <strong style="color:var(--color-accent);">public\</strong>                     <span style="color:var(--color-mute);">← 素材はここだけ</span>
+│   ├── telop-demo\             <span style="color:var(--color-mute);">← 1本目の素材</span>
+│   │   ├── source.mp4
+│   │   └── subtitles.txt
+│   └── interview\              <span style="color:var(--color-mute);">← 2本目は隣に足す</span>
+│       ├── interview.mp4
+│       └── interview-subs.txt
+└── src\
+    ├── TelopDemo\              <span style="color:var(--color-mute);">← 1本目のコード</span>
+    └── Interview\              <span style="color:var(--color-mute);">← 2本目のコード</span></pre>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:18px;">
+        <div style="border:2px solid var(--color-accent); border-radius:12px; padding:20px 22px; background:#fafafa; text-align:left;">
+          <div style="font-size:17pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">決まり</div>
+          <div style="font-size:19pt; line-height:1.6; color:var(--color-text);">素材は <code style="font-family:var(--font-mono);">public</code> の中に置く<br><span style="font-size:16pt; color:var(--color-sub);">書き出しに使う内部のブラウザから見えるのが、ここだけ。外にあると読み込めない</span></div>
+        </div>
+        <div style="border:2px solid var(--color-line); border-radius:12px; padding:20px 22px; background:#fafafa; text-align:left;">
+          <div style="font-size:17pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">おすすめ</div>
+          <div style="font-size:19pt; line-height:1.6; color:var(--color-text);">動画1本につき、<br>素材フォルダ1つ・コードフォルダ1つ<br><span style="font-size:16pt; color:var(--color-sub);">両方に同じ名前をつけておくと、2本目・3本目が増えても対応が分かる</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex-shrink:0; margin-top:22px; font-size:18pt; color:var(--color-mute); line-height:1.6;">動画を Claude Code に添付する必要はありません。置いた場所を伝えるだけで読んでくれます</div>
+  </section>
+
+  <!-- 7: SCALE — 量産 -->
   <section class="slide">
     <div class="eyebrow">SCALE</div>
     <h2 style="font-size:40pt;">データを差し替えれば、<br>同じ型の動画を何本でも</h2>
@@ -369,7 +428,7 @@ html, body {
     <div style="margin-top:26px; font-size:18pt; color:var(--color-mute); line-height:1.6;">GMOの技術ブログでは、インタビュー動画30本以上へのテロップ挿入を夜間に無人で完了したと報告されています</div>
   </section>
 
-  <!-- 6: CLOSING -->
+  <!-- 8: CLOSING -->
   <section class="slide">
     <div class="eyebrow">CLOSING</div>
     <h2>手作業の繰り返しを、仕組みに置き換える</h2>
@@ -381,7 +440,7 @@ html, body {
     <div style="margin-top:18px; font-size:20pt; color:var(--color-sub); line-height:1.7;">テロップ入れ・メンバー紹介・商品紹介・ランキング・データの可視化——<br>同じ作業を繰り返している場面ほど、置き換えたときの効果が出ます</div>
   </section>
 
-  <!-- 7: CAUTION -->
+  <!-- 9: CAUTION -->
   <section class="slide">
     <div class="eyebrow">CAUTION</div>
     <h2>自分で試すときの注意点</h2>
