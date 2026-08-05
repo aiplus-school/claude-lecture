@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Higgsfield MCP　Claude Codeから動画を生成しよう</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  --font-family: "游ゴシック", "Yu Gothic", YuGothic, "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --font-mono: "SF Mono", Menlo, Consolas, monospace;
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-sub: #555555;
+  --color-mute: #888888;
+  --color-accent: #c15f3c;
+  --color-accent-soft: #f4e9e3;
+  --color-line: #e5e5e5;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 収録解像度 1920×1080 を原寸の土台にして、ウィンドウの大きさに合わせて全体を拡大縮小する。
+   小さいウィンドウでも、本番と同じ見た目のまま端が切れずに収まる。 */
+.deck {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: center center;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 120px;
+  text-align: center;
+}
+
+.slide.active {
+  display: flex;
+}
+
+.slide h1 {
+  font-size: 64pt;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+.slide h2 {
+  font-size: 44pt;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.slide h3 {
+  font-size: 32pt;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-sub);
+}
+
+.slide p {
+  font-size: 28pt;
+  line-height: 1.8;
+  max-width: 1100px;
+}
+
+.slide p + p {
+  margin-top: 28px;
+}
+
+.slide .subtitle {
+  font-size: 24pt;
+  color: var(--color-sub);
+  margin-top: 24px;
+  font-weight: 500;
+}
+
+.slide .eyebrow {
+  font-size: 20pt;
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+
+.slide .big-number {
+  font-size: 140pt;
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.slide ul.plain {
+  list-style: none;
+  font-size: 28pt;
+  line-height: 2;
+  text-align: left;
+  max-width: 900px;
+}
+
+.slide ul.plain li {
+  padding-left: 44px;
+  position: relative;
+}
+
+.slide ul.plain li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+/* 見出し＋補足の2段構成の項目は、点を1行目の中央に合わせる */
+.slide ul.plain li.stacked::before {
+  top: 0.95em;
+}
+
+/* 枠の中で使う小さめの箇条書き */
+.slide ul.box-list {
+  list-style: none;
+  text-align: left;
+  font-size: 20pt;
+  line-height: 1.6;
+  /* 行は左揃えのまま、リスト全体は内容幅に縮めて枠の中央に置く */
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.slide ul.box-list li {
+  position: relative;
+  padding-left: 30px;
+}
+
+.slide ul.box-list li + li {
+  margin-top: 20px;
+}
+
+.slide ul.box-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.8em;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+.slide ul.box-list.muted li::before {
+  background: var(--color-mute);
+}
+
+.slide .sections {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px 36px;
+  font-size: 26pt;
+  text-align: left;
+  max-width: 1000px;
+  line-height: 1.5;
+}
+
+.slide .sections .tag {
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.slide .tagline {
+  position: absolute;
+  bottom: 60px;
+  font-size: 18pt;
+  color: var(--color-mute);
+}
+
+.slide.cover {
+  background: var(--color-bg);
+}
+
+.slide.cover .brand {
+  font-size: 18pt;
+  color: var(--color-accent);
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+
+.slide.cover h1 {
+  font-size: 80pt;
+  margin-bottom: 24px;
+}
+
+.slide.cover .subtitle {
+  font-size: 28pt;
+}
+
+.slide .rule {
+  width: 80px;
+  height: 4px;
+  background: var(--color-accent);
+  margin: 32px 0;
+}
+
+/* スライド下部の補足の一言。薄いグレーだと埋もれるので、
+   淡いアクセント地に濃い文字を置いて読ませる。 */
+.slide .note {
+  flex-shrink: 0;
+  margin-top: 26px;
+  padding: 14px 30px;
+  border-radius: 10px;
+  background: var(--color-accent-soft);
+  font-size: 20pt;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+/* 比較表（Remotion / Higgsfield） */
+.slide table.compare {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 1440px;
+  font-size: 19pt;
+  line-height: 1.5;
+  table-layout: fixed;
+}
+
+.slide table.compare th,
+.slide table.compare td {
+  border: 2px solid var(--color-line);
+  padding: 14px 18px;
+  text-align: left;
+  vertical-align: middle;
+  /* 折り返すときは文節の切れ目で折る（1文字だけ次の行に落ちるのを防ぐ） */
+  word-break: auto-phrase;
+}
+
+.slide table.compare thead th {
+  background: #fafafa;
+  font-size: 20pt;
+  font-weight: 700;
+  text-align: center;
+}
+
+.slide table.compare thead th.tool {
+  color: var(--color-accent);
+}
+
+.slide table.compare tbody th {
+  background: #fafafa;
+  font-weight: 700;
+  color: var(--color-sub);
+  width: 320px;
+}
+
+.page-indicator {
+  position: fixed;
+  bottom: 24px;
+  right: 32px;
+  font-size: 18pt;
+  color: var(--color-mute);
+  font-family: var(--font-mono);
+  z-index: 100;
+}
+
+.nav-hint {
+  position: fixed;
+  bottom: 24px;
+  left: 32px;
+  font-size: 18pt;
+  color: var(--color-mute);
+  z-index: 100;
+}
+
+@media (max-width: 1279px), (max-height: 799px) {
+  .page-indicator {
+    font-size: clamp(11px, 1.5vmin, 18pt);
+    bottom: clamp(10px, 2vmin, 24px);
+    right: clamp(12px, 2vmin, 32px);
+  }
+  .nav-hint {
+    font-size: clamp(11px, 1.5vmin, 18pt);
+    bottom: clamp(10px, 2vmin, 24px);
+    left: clamp(12px, 2vmin, 32px);
+  }
+}
+
+@media print {
+  .page-indicator, .nav-hint { display: none; }
+  .deck { position: static; transform: none; width: 1920px; height: auto; }
+  .slide { display: flex !important; page-break-after: always; position: relative; width: 1920px; height: 1080px; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- 1: Cover -->
+  <section class="slide cover active">
+    <h1 style="font-size:64pt;">Higgsfield MCP<br>Claude Codeから<br>動画を生成しよう</h1>
+  </section>
+
+  <!-- 2: WHAT IS HIGGSFIELD MCP -->
+  <section class="slide">
+    <div class="eyebrow">WHAT IS HIGGSFIELD MCP</div>
+    <h2>Claude Code を Higgsfield につなぐ</h2>
+    <div class="rule"></div>
+    <div style="display:flex; align-items:stretch; justify-content:center; gap:28px; margin-top:24px; width:100%; max-width:1200px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">Claude だけで頼む</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">演出は考えられる<br>動画そのものは作れない</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">別のサービスの画面を開いて<br>打ち込み直す</div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:center; min-width:80px;">
+        <div style="font-size:52pt; color:var(--color-accent); font-weight:700;">→</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:32px 22px; background:#fafafa; text-align:center;">
+        <div style="font-size:18pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:20px;">MCPでつなぐ</div>
+        <div style="font-size:22pt; line-height:1.7; color:var(--color-text); font-weight:500;">考えた内容が<br>そのまま動画になる</div>
+        <div style="margin-top:18px; font-size:18pt; line-height:1.7; color:var(--color-sub);">「ここを直したい」で<br>作り直しまで</div>
+      </div>
+    </div>
+    <div class="note">MCP＝AIが外部のツールとつながるための共通規格</div>
+  </section>
+
+  <!-- 3: REMOTION vs HIGGSFIELD -->
+  <section class="slide">
+    <div class="eyebrow">REMOTION vs HIGGSFIELD</div>
+    <h2 style="font-size:36pt; flex-shrink:0;">コードで組み立てるか、生成モデルに作らせるか</h2>
+    <div class="rule" style="margin:18px 0; flex-shrink:0;"></div>
+    <table class="compare" style="flex-shrink:0;">
+      <thead>
+        <tr>
+          <th style="width:320px;"></th>
+          <th class="tool">Remotion</th>
+          <th class="tool">Higgsfield</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>作り方</th>
+          <td>コードで組み立てる</td>
+          <td>AIのモデルに作らせる</td>
+        </tr>
+        <tr>
+          <th>得意なもの</th>
+          <td>文字・図形・データを使った動画</td>
+          <td>実写のような映像・人が自然に動く映像</td>
+        </tr>
+        <tr>
+          <th>同じものを作り直せるか</th>
+          <td>何度でも同じ</td>
+          <td>毎回変わる</td>
+        </tr>
+        <tr>
+          <th>直したいとき</th>
+          <td>その部分だけ直せる</td>
+          <td>作り直すか、できた動画に手を入れる</td>
+        </tr>
+        <tr>
+          <th>素材の画像</th>
+          <td>自分のパソコンから出ない</td>
+          <td>Higgsfield に送って、そこで作ってもらう</td>
+        </tr>
+        <tr>
+          <th>費用のかかり方</th>
+          <td>作るたびの費用はかからない</td>
+          <td>作るたびにクレジットが減る</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note" style="margin-top:20px;">この2つは組み合わせても使えます</div>
+  </section>
+
+  <!-- 4: WHY CLAUDE CODE -->
+  <section class="slide">
+    <div class="eyebrow">WHY CLAUDE CODE</div>
+    <h2 style="font-size:40pt;">なぜブラウザで使わず、<br>Claude Code につなぐのか</h2>
+    <div class="rule"></div>
+    <div style="display:flex; align-items:stretch; justify-content:center; gap:24px; margin-top:8px; width:100%; max-width:1240px;">
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:28px 24px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">01</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">同じ作業の繰り返しを<br>まとめて頼める</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">ブラウザなら<br>「2枚選ぶ → 指示 → 待つ」×4回<br>＋ 4本をつなぐ作業</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:28px 24px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">02</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">他の作業と<br>地続きになる</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">ダウンロード → フォルダに入れる<br>→ 読み込む<br>の往復が要らない</div>
+      </div>
+    </div>
+    <div style="margin-top:26px; width:100%; max-width:1240px; border:2px solid var(--color-line); border-radius:12px; padding:22px 28px; background:#fafafa;">
+      <div style="font-size:17pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:12px;">役割分担</div>
+      <div style="font-size:21pt; line-height:1.6; color:var(--color-text);"><strong style="color:var(--color-accent);">Claude</strong>＝一緒に考えて、手順をまとめて進める　／　<strong style="color:var(--color-accent);">Higgsfield</strong>＝実際に動画を作る</div>
+    </div>
+  </section>
+
+  <!-- 5: BEFORE YOU START -->
+  <section class="slide">
+    <div class="eyebrow">BEFORE YOU START</div>
+    <h2>始める前に、2つだけ確認</h2>
+    <div class="rule"></div>
+    <div style="display:flex; align-items:stretch; justify-content:center; gap:24px; margin-top:8px; width:100%; max-width:1240px;">
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:28px 24px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">01</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">動画の生成は<br>有料プランが前提</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">無料の範囲・いちばん安い有料プラン<br>→ 今回のモデルと機能は対象外</div>
+        <div style="margin-top:16px; padding-top:16px; border-top:2px solid var(--color-line); font-size:19pt; color:var(--color-text); line-height:1.6;">選ぶ基準は<strong style="color:var(--color-accent);">「すべてのモデルと機能が使える」</strong><br><span style="font-size:17pt; color:var(--color-sub);">迷ったら <strong style="color:var(--color-accent);">Plus</strong> か <strong style="color:var(--color-accent);">Pro</strong> を選ぶ</span></div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:28px 24px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">02</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">動画のもとにする画像は<br>先に用意する</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">今回は、こちらで用意した5枚</div>
+        <div style="margin-top:16px; padding-top:16px; border-top:2px solid var(--color-line); font-size:19pt; color:var(--color-text); line-height:1.6;">同じ画像は<strong style="color:var(--color-accent);">概要欄にリンク</strong><br><span style="font-size:17pt; color:var(--color-sub);">同じ手順で試せます</span></div>
+      </div>
+    </div>
+    <div class="note">プラン名・金額は変わることがあります。最新の情報は概要欄のリンクから公式サイトで</div>
+  </section>
+
+  <!-- 6: MATERIALS — 素材の5枚と、つなぎ方 -->
+  <section class="slide">
+    <div class="eyebrow">MATERIALS</div>
+    <h2 style="font-size:36pt; flex-shrink:0;">5枚の画像を、となり合う2枚ずつ・4つの区間でつなぐ</h2>
+    <div class="rule" style="margin:18px 0; flex-shrink:0;"></div>
+    <div style="flex-shrink:0; display:flex; align-items:center; justify-content:center; gap:0; width:100%; max-width:1500px;">
+
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:18px 10px; background:#fafafa; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:15pt; color:var(--color-mute);">01</div>
+        <div style="margin-top:6px; font-size:19pt; font-weight:700; color:var(--color-text);">看板</div>
+      </div>
+
+      <div style="flex:0 0 96px; text-align:center;">
+        <div style="font-size:16pt; font-weight:700; color:var(--color-accent);">区間1</div>
+        <div style="font-size:26pt; color:var(--color-accent); font-weight:700; line-height:1.2;">→</div>
+        <div style="font-size:15pt; color:var(--color-sub);">5秒</div>
+      </div>
+
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:18px 10px; background:#fafafa; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:15pt; color:var(--color-mute);">02</div>
+        <div style="margin-top:6px; font-size:19pt; font-weight:700; color:var(--color-text);">カウンター</div>
+      </div>
+
+      <div style="flex:0 0 96px; text-align:center;">
+        <div style="font-size:16pt; font-weight:700; color:var(--color-accent);">区間2</div>
+        <div style="font-size:26pt; color:var(--color-accent); font-weight:700; line-height:1.2;">→</div>
+        <div style="font-size:15pt; color:var(--color-sub);">5秒</div>
+      </div>
+
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:18px 10px; background:#fafafa; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:15pt; color:var(--color-mute);">03</div>
+        <div style="margin-top:6px; font-size:19pt; font-weight:700; color:var(--color-text);">抽出</div>
+      </div>
+
+      <div style="flex:0 0 96px; text-align:center;">
+        <div style="font-size:16pt; font-weight:700; color:var(--color-accent);">区間3</div>
+        <div style="font-size:26pt; color:var(--color-accent); font-weight:700; line-height:1.2;">→</div>
+        <div style="font-size:15pt; color:var(--color-sub);">5秒</div>
+      </div>
+
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:18px 10px; background:#fafafa; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:15pt; color:var(--color-mute);">04</div>
+        <div style="margin-top:6px; font-size:19pt; font-weight:700; color:var(--color-text);">ドリンク</div>
+      </div>
+
+      <div style="flex:0 0 96px; text-align:center;">
+        <div style="font-size:16pt; font-weight:700; color:var(--color-accent);">区間4</div>
+        <div style="font-size:26pt; color:var(--color-accent); font-weight:700; line-height:1.2;">→</div>
+        <div style="font-size:15pt; color:var(--color-sub);">5秒</div>
+      </div>
+
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:18px 10px; background:#fafafa; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:15pt; color:var(--color-mute);">05</div>
+        <div style="margin-top:6px; font-size:19pt; font-weight:700; color:var(--color-text);">客席</div>
+      </div>
+
+    </div>
+
+    <div style="flex-shrink:0; margin-top:18px; font-size:23pt; font-weight:700; color:var(--color-accent);">1区間5秒 × 4区間 ＝ 合計20秒</div>
+
+    <div style="flex-shrink:0; display:flex; align-items:stretch; justify-content:center; gap:22px; margin-top:22px; width:100%; max-width:1400px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:20px 22px; background:#fafafa; text-align:left;">
+        <div style="font-size:17pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">画像を先に用意する理由</div>
+        <div style="font-size:18pt; line-height:1.6; color:var(--color-text);">「何が写っているか」は画像で決まる<br>→ 伝えるのは<strong>「どう動くか」</strong>だけ</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:20px 22px; background:#fafafa; text-align:left;">
+        <div style="font-size:17pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">使う機能は「2枚1組」</div>
+        <div style="font-size:18pt; line-height:1.6; color:var(--color-text);">始まりの画像 ＋ 終わりの画像<br>→ その間の動きを作る</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:20px 22px; background:#fafafa; text-align:left;">
+        <div style="font-size:17pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">各区間を5秒にする理由</div>
+        <div style="font-size:18pt; line-height:1.6; color:var(--color-text);">早く仕上がる<br>やり直しやすい</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:18px; background:transparent;">素材は <code style="font-family:var(--font-mono);">images/</code> に、順番が分かる名前で　／　最後に4本を1本につなぐ</div>
+  </section>
+
+  <!-- 7: FIVE ELEMENTS — 動画の指示 -->
+  <section class="slide">
+    <div class="eyebrow">FIVE ELEMENTS</div>
+    <h2 style="font-size:36pt; flex-shrink:0;">動画の指示は「5つの要素」で組み立てる</h2>
+    <div class="rule" style="margin:18px 0; flex-shrink:0;"></div>
+    <div style="flex-shrink:0; display:grid; grid-template-columns:repeat(5, 1fr); gap:18px; width:100%; max-width:1440px;">
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:22px 16px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:18pt; font-weight:700; color:var(--color-mute); margin-bottom:10px;">①</div>
+        <div style="font-size:21pt; line-height:1.5; color:var(--color-text); font-weight:700;">被写体</div>
+        <div style="margin-top:10px; font-size:17pt; color:var(--color-sub); line-height:1.6;">何を</div>
+      </div>
+      <div style="border:2px solid var(--color-accent); border-radius:12px; padding:22px 16px; background:var(--color-accent-soft); text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:18pt; font-weight:700; color:var(--color-accent); margin-bottom:10px;">②</div>
+        <div style="font-size:21pt; line-height:1.5; color:var(--color-text); font-weight:700;">動き</div>
+        <div style="margin-top:10px; font-size:17pt; color:var(--color-sub); line-height:1.6;">何がどう動くか</div>
+      </div>
+      <div style="border:2px solid var(--color-accent); border-radius:12px; padding:22px 16px; background:var(--color-accent-soft); text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:18pt; font-weight:700; color:var(--color-accent); margin-bottom:10px;">③</div>
+        <div style="font-size:21pt; line-height:1.5; color:var(--color-text); font-weight:700;">カメラワーク</div>
+        <div style="margin-top:10px; font-size:17pt; color:var(--color-sub); line-height:1.6;">寄る・引く・横に動く</div>
+      </div>
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:22px 16px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:18pt; font-weight:700; color:var(--color-mute); margin-bottom:10px;">④</div>
+        <div style="font-size:21pt; line-height:1.5; color:var(--color-text); font-weight:700;">雰囲気</div>
+        <div style="margin-top:10px; font-size:17pt; color:var(--color-sub); line-height:1.6;">明るさ・時間帯・トーン</div>
+      </div>
+      <div style="border:2px solid var(--color-line); border-radius:12px; padding:22px 16px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:18pt; font-weight:700; color:var(--color-mute); margin-bottom:10px;">⑤</div>
+        <div style="font-size:21pt; line-height:1.5; color:var(--color-text); font-weight:700;">尺とモデル</div>
+        <div style="margin-top:10px; font-size:17pt; color:var(--color-sub); line-height:1.6;">何秒か・どの設定で</div>
+      </div>
+    </div>
+
+    <div style="flex-shrink:0; margin-top:20px; width:100%; max-width:1440px; border:2px solid var(--color-accent); border-radius:12px; padding:18px 26px; background:#fafafa;">
+      <div style="font-size:20pt; line-height:1.6; color:var(--color-text);">①④＝渡す2枚の画像が決める　／　言葉で埋めるのは <strong style="color:var(--color-accent);">②動き・③カメラワーク</strong>　／　⑤＝各区間5秒・720p・Kling 3.0</div>
+    </div>
+
+    <div style="flex-shrink:0; display:flex; align-items:stretch; justify-content:center; gap:22px; margin-top:20px; width:100%; max-width:1440px;">
+      <div style="flex:1; border:2px solid var(--color-line); border-radius:12px; padding:20px 22px; background:#fafafa; text-align:left;">
+        <div style="font-size:17pt; color:var(--color-sub); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">「この2枚をつないで」だけ</div>
+        <div style="font-size:18pt; line-height:1.6; color:var(--color-text);">2枚が入れ替わるだけの<br>ほとんど止まったような画</div>
+      </div>
+      <div style="flex:1; border:2px solid var(--color-accent); border-radius:12px; padding:20px 22px; background:#fafafa; text-align:left;">
+        <div style="font-size:17pt; color:var(--color-accent); letter-spacing:0.2em; font-weight:700; margin-bottom:10px;">②と③まで書く</div>
+        <div style="font-size:18pt; line-height:1.6; color:var(--color-text);">「カメラがゆっくり前に進む」<br>「湯気が立ちのぼる」</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:18px; background:transparent;">720p ＝ 動画の解像度のひとつ。大きいほど画がきめ細かくなり、その分クレジットを多く使います</div>
+  </section>
+
+  <!-- 8: NEXT STEPS — 作った動画を、次の作業につなげる -->
+  <section class="slide">
+    <div class="eyebrow">NEXT STEPS</div>
+    <h2 style="font-size:40pt;">作った動画を、次の作業につなげる</h2>
+    <div class="rule"></div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; width:100%; max-width:1400px; margin:8px auto 0;">
+      <div style="border:2px solid var(--color-accent); border-radius:12px; padding:28px 24px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">01</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">作っているものに<br>差し込む</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">Webページや資料に<br>できた動画を組み込む</div>
+        <div style="margin-top:16px; padding-top:16px; border-top:2px solid var(--color-line); font-size:19pt; color:var(--color-text); line-height:1.6;">ファイルが<strong style="color:var(--color-accent);">決めた場所</strong>にあるので<br>そのまま指定できる</div>
+      </div>
+      <div style="border:2px solid var(--color-accent); border-radius:12px; padding:28px 24px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">02</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">素材だけ差し替えて<br>もう1本作る</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">「同じ組み立てのまま、<br>別の画像5枚で作って」</div>
+        <div style="margin-top:16px; padding-top:16px; border-top:2px solid var(--color-line); font-size:19pt; color:var(--color-text); line-height:1.6;">区間ごとの指示が<strong style="color:var(--color-accent);">会話に残っている</strong><br>ので使い回せる</div>
+      </div>
+      <div style="border:2px solid var(--color-accent); border-radius:12px; padding:28px 24px; background:#fafafa; text-align:center; display:flex; flex-direction:column;">
+        <div style="font-size:20pt; font-weight:700; color:var(--color-accent); margin-bottom:14px;">03</div>
+        <div style="font-size:22pt; line-height:1.6; color:var(--color-text); font-weight:700;">できた動画を<br>手元で加工する</div>
+        <div style="margin-top:14px; font-size:18pt; color:var(--color-sub); line-height:1.65;">別のサイズで書き出す<br>一部だけ切り出す</div>
+        <div style="margin-top:16px; padding-top:16px; border-top:2px solid var(--color-line); font-size:19pt; color:var(--color-text); line-height:1.6;">4本を1本に<strong style="color:var(--color-accent);">つないだのと同じ</strong><br>やり方</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9: CLOSING -->
+  <section class="slide">
+    <div class="eyebrow">CLOSING</div>
+    <h2>考える Claude と、作る Higgsfield</h2>
+    <div class="rule"></div>
+    <div style="border:2px solid var(--color-accent); border-radius:12px; padding:40px 48px; background:#fafafa; max-width:1150px;">
+      <div style="font-size:26pt; line-height:1.8; color:var(--color-text); font-weight:500;">今回追加で覚えて帰ってほしい使い方<br><span style="color:var(--color-accent);">Claude Code に頼めば、Higgsfield の動画づくりを<br>会話だけで進められる</span></div>
+    </div>
+    <div style="margin-top:32px; font-size:21pt; color:var(--color-sub); line-height:1.8;">作る前に相談する　／　気になる区間だけ直す　／　作り直さずに手を入れる</div>
+  </section>
+
+  <!-- 10: CAUTION -->
+  <section class="slide">
+    <div class="eyebrow">CAUTION</div>
+    <h2>自分で試すときの注意点</h2>
+    <div class="rule"></div>
+    <ul class="plain" style="text-align:left; max-width:1100px; font-size:25pt; line-height:1.8; margin-top:8px;">
+      <li class="stacked" style="text-align:left;">指示は<strong style="color:var(--color-accent);">5つの要素</strong>で組み立てる<br><span style="font-size:18pt; color:var(--color-sub);">画像を2枚渡すなら「動き」と「カメラワーク」が中心</span></li>
+      <li class="stacked" style="text-align:left; margin-top:20px;">作る前に、<strong style="color:var(--color-accent);">案を出してもらう</strong><br><span style="font-size:18pt; color:var(--color-sub);">「まだ作らないで、まず案を見せて」の一言。プランモードも同じ狙い</span></li>
+      <li class="stacked" style="text-align:left; margin-top:20px;">枚数・区間の数・秒数は、<strong style="color:var(--color-accent);">自分で指定する</strong><br><span style="font-size:18pt; color:var(--color-sub);">任せきりにすると本数が増え、そのぶんクレジットを使う</span></li>
+      <li class="stacked" style="text-align:left; margin-top:20px;">仕事で使うなら、<strong style="color:var(--color-accent);">権利のまわり</strong>を確認する<br><span style="font-size:18pt; color:var(--color-sub);">どこまで使えるかはプランと利用条件による</span></li>
+    </ul>
+    <div class="note">まず軽く作って、確かめて、気になるところだけ直していく</div>
+  </section>
+
+</div>
+
+<div class="page-indicator"><span id="cur">1</span> / <span id="total">1</span></div>
+<div class="nav-hint">← → / Space</div>
+
+<script>
+  const deck = document.querySelector('.deck');
+  const slides = document.querySelectorAll('.slide');
+  const cur = document.getElementById('cur');
+  const total = document.getElementById('total');
+  total.textContent = slides.length;
+  let i = 0;
+
+  // 1920×1080 の土台を、ウィンドウに収まる倍率まで縮めて中央に置く
+  function fit() {
+    const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    deck.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  function show(n) {
+    i = Math.max(0, Math.min(n, slides.length - 1));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    cur.textContent = i + 1;
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) {}
+  }
+  const initial = parseInt(location.hash.replace('#', ''), 10);
+  show(Number.isFinite(initial) && initial > 0 ? initial - 1 : 0);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') { show(0); }
+    else if (e.key === 'End') { show(slides.length - 1); }
+  });
+  document.addEventListener('click', () => show(i + 1));
+</script>
+
+</body>
+</html>
